@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.com.vsgi</groupId>
-	<artifactId>core</artifactId>
+	<artifactId>retail</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>core</name>
+	<name>retail</name>
 	<description>project vsgi retail </description>
 	<properties>
 		<java.version>17</java.version>
