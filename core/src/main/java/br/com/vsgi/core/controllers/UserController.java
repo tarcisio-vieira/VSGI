@@ -49,7 +49,7 @@ public class UserController {
 		List<UserModel> usersList = userRepository.findAll();
 		if(!usersList.isEmpty()) {
 			for(UserModel user : usersList) {
-				UUID id = user.getId();
+				UUID id = user.getVsgi_user_uuid();
 				user.add(linkTo(methodOn(UserController.class).getOneUser(id)).withSelfRel());
 			}
 		}

@@ -1,5 +1,7 @@
 package br.com.vsgi.core.controllers;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -50,7 +52,7 @@ public class AuthenticationController {
 		if(this.userRepository.findByLogin(dataRegisterDto.login()) != null) return ResponseEntity.badRequest().build();
 		
 		String encryptedPassword = new BCryptPasswordEncoder().encode(dataRegisterDto.password());
-		UserModel newUser = new UserModel(dataRegisterDto.login(), encryptedPassword, dataRegisterDto.role());   
+		UserModel newUser = new UserModel(dataRegisterDto.login(), encryptedPassword, dataRegisterDto.role(), UUID.randomUUID());   
 		
 		this.userRepository.save(newUser);
 		
