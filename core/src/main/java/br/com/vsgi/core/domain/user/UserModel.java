@@ -41,8 +41,11 @@ public class UserModel extends RepresentationModel<UserModel> implements Seriali
 	/**
 	 * UUID vsgi_user_uuid
 	 */
-	private UUID vsgi_user_uuid;		
-
+	private UUID vsgi_user_uuid;	
+	
+	/**
+	 * boolean isactive
+	 */
 	@NotNull
 	@Builder.Default
 	private boolean isactive = true;	

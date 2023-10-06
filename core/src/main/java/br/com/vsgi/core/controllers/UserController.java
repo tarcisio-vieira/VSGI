@@ -99,5 +99,4 @@ public class UserController {
 		userRepository.delete(userOptional.get());
 		return ResponseEntity.status(HttpStatus.OK).body("User deleted successfuly");
 	}
-
 }

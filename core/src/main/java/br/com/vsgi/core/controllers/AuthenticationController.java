@@ -18,7 +18,6 @@ import br.com.vsgi.core.domain.user.RegisterDto;
 import br.com.vsgi.core.domain.user.UserModel;
 import br.com.vsgi.core.infra.security.TokenService;
 import br.com.vsgi.core.repositories.UserRepository;
-
 import jakarta.validation.Valid;
 
 @RestController
