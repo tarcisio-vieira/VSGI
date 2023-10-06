@@ -25,6 +25,7 @@ import br.com.vsgi.core.domain.product.ProductDto;
 import br.com.vsgi.core.domain.product.ProductModel;
 import br.com.vsgi.core.domain.user.UserModel;
 import br.com.vsgi.core.repositories.ProductRepository;
+import br.com.vsgi.core.repositories.ProductUUIDRepository;
 import br.com.vsgi.core.repositories.UserRepository;
 import jakarta.validation.Valid; 
 
@@ -33,6 +34,9 @@ public class ProductController {
 
 	@Autowired
 	ProductRepository productRepository;
+	
+	@Autowired
+	ProductUUIDRepository productUUIDRepository;	
 	
 	@Autowired
 	private UserRepository userRepository;
@@ -66,7 +70,7 @@ public class ProductController {
 		List<ProductModel> productsList = productRepository.findAll();
 		if(!productsList.isEmpty()) {
 			for(ProductModel product : productsList) {
-				UUID id = product.getVsgi_product_uuid();
+				 Long id = product.getVsgi_product_id();
 				product.add(linkTo(methodOn(ProductController.class).getOneProduct(id)).withSelfRel());
 			}
 		}
@@ -78,7 +82,7 @@ public class ProductController {
 	 * @return
 	 */
 	@GetMapping("/products/{id}")
-	public ResponseEntity<Object> getOneProduct(@PathVariable(value="id") UUID id) {
+	public ResponseEntity<Object> getOneProduct(@PathVariable(value="id") Long id) {
 		Optional<ProductModel> productOptional = productRepository.findById(id);
 		if(productOptional.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
@@ -92,7 +96,7 @@ public class ProductController {
 	 * @return
 	 */
 	@PutMapping("/products/{id}")
-	public ResponseEntity<Object> updateProduct(@PathVariable(value = "id") UUID id,
+	public ResponseEntity<Object> updateProduct(@PathVariable(value = "id") Long id,
 			@RequestBody @Valid ProductDto productRecordDto) {
 		Optional<ProductModel> productOptional = productRepository.findById(id);
 		if (productOptional.isEmpty()) {
@@ -113,7 +117,7 @@ public class ProductController {
 	 * @return
 	 */
 	@DeleteMapping("/products/{id}")
-	public ResponseEntity<Object> deleteProduct(@PathVariable(value = "id") UUID id) {
+	public ResponseEntity<Object> deleteProduct(@PathVariable(value = "id") Long id) {
 		Optional<ProductModel> productOptional = productRepository.findById(id);
 		if (productOptional.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
