@@ -25,7 +25,6 @@ import br.com.vsgi.core.domain.product.ProductDto;
 import br.com.vsgi.core.domain.product.ProductModel;
 import br.com.vsgi.core.domain.user.UserModel;
 import br.com.vsgi.core.repositories.ProductRepository;
-import br.com.vsgi.core.repositories.ProductUUIDRepository;
 import br.com.vsgi.core.repositories.UserRepository;
 import jakarta.validation.Valid; 
 
@@ -34,9 +33,6 @@ public class ProductController {
 
 	@Autowired
 	ProductRepository productRepository;
-	
-	@Autowired
-	ProductUUIDRepository productUUIDRepository;	
 	
 	@Autowired
 	private UserRepository userRepository;
