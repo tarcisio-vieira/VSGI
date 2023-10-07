@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.vsgi.core.domain.user.AuthenticationDto;
-import br.com.vsgi.core.domain.user.LoginResponseDto;
-import br.com.vsgi.core.domain.user.RegisterDto;
+import br.com.vsgi.core.domain.authentication.AuthenticationDto;
+import br.com.vsgi.core.domain.authentication.LoginResponseDto;
+import br.com.vsgi.core.domain.authentication.RegisterDto;
 import br.com.vsgi.core.domain.user.UserModel;
 import br.com.vsgi.core.infra.security.TokenService;
-import br.com.vsgi.core.repositories.UserRepository;
+import br.com.vsgi.core.repositories.AuthenticationRepository;
 import jakarta.validation.Valid;
 
 @RestController
@@ -28,11 +28,11 @@ public class AuthenticationController {
 	private AuthenticationManager authenticationManager;
 	
 	@Autowired
-	private UserRepository userRepository;
-	
+	private AuthenticationRepository authenticationRepository;
+
 	@Autowired
 	private TokenService tokenService;
-	
+
 	@SuppressWarnings("rawtypes")
 	@PostMapping("/login")
 	public ResponseEntity login(@RequestBody @Valid AuthenticationDto dataAuthenticationDto) {
@@ -48,12 +48,12 @@ public class AuthenticationController {
 	@SuppressWarnings("rawtypes")
 	@PostMapping("/register")
 	public ResponseEntity register(@RequestBody @Valid RegisterDto dataRegisterDto) {
-		if(this.userRepository.findByLogin(dataRegisterDto.login()) != null) return ResponseEntity.badRequest().build();
+		if(this.authenticationRepository.findByLogin(dataRegisterDto.login()) != null) return ResponseEntity.badRequest().build();
 		
 		String encryptedPassword = new BCryptPasswordEncoder().encode(dataRegisterDto.password());
 		UserModel newUser = new UserModel(dataRegisterDto.login(), encryptedPassword, dataRegisterDto.role(), UUID.randomUUID());   
 		
-		this.userRepository.save(newUser);
+		this.authenticationRepository.save(newUser);
 		
 		return ResponseEntity.ok().build(); 		
 	}	
