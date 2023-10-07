@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import br.com.vsgi.core.repositories.UserRepository;
+import br.com.vsgi.core.repositories.AuthenticationRepository;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +23,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 	TokenService tokenService;
 	
 	@Autowired
-	UserRepository userRepository;
+	AuthenticationRepository userRepository;
 	
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

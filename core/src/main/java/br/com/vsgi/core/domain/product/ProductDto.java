@@ -5,5 +5,5 @@ import java.math.BigDecimal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record ProductDto(@NotBlank String name,@NotNull BigDecimal value) {
+public record ProductDto(@NotBlank String name, String description, @NotNull BigDecimal value) {
 }

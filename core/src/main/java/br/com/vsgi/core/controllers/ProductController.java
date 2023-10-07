@@ -25,7 +25,7 @@ import br.com.vsgi.core.domain.product.ProductDto;
 import br.com.vsgi.core.domain.product.ProductModel;
 import br.com.vsgi.core.domain.user.UserModel;
 import br.com.vsgi.core.repositories.ProductRepository;
-import br.com.vsgi.core.repositories.UserRepository;
+import br.com.vsgi.core.repositories.AuthenticationRepository;
 import jakarta.validation.Valid; 
 
 @RestController
@@ -35,8 +35,8 @@ public class ProductController {
 	ProductRepository productRepository;
 	
 	@Autowired
-	private UserRepository userRepository;
-
+	private AuthenticationRepository userRepository;
+	
 	/**
 	 * @param productRecordDto
 	 * @return
@@ -45,13 +45,14 @@ public class ProductController {
 	public ResponseEntity<ProductModel> saveProduct(@RequestBody @Valid ProductDto productRecordDto) {
 		var productModel = new ProductModel();
 		BeanUtils.copyProperties(productRecordDto, productModel);
+		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		UserModel userModel = (UserModel) this.userRepository.findByLogin(authentication.getName());
+		UserModel authenticatedUser = (UserModel) this.userRepository.findByLogin(authentication.getName());
 		productModel.setVsgi_product_uuid(UUID.randomUUID());
-		productModel.setCreatedby(userModel.getVsgi_user_id());
-		productModel.setUpdatedby(userModel.getVsgi_user_id());
-		productModel.setVsgi_client_id(userModel.getVsgi_client_id());
-		productModel.setVsgi_org_id(userModel.getVsgi_org_id());
+		productModel.setCreatedby(authenticatedUser.getVsgi_user_id());
+		productModel.setUpdatedby(authenticatedUser.getVsgi_user_id());
+		productModel.setVsgi_client_id(authenticatedUser.getVsgi_client_id());
+		productModel.setVsgi_org_id(authenticatedUser.getVsgi_org_id());
 		if (productModel.getDescription() == null || productModel.getDescription().trim().equals("")) {
 			productModel.setDescription(productModel.getName());
 		}
@@ -100,10 +101,10 @@ public class ProductController {
 		}		
 		var productModel = productOptional.get();
 		BeanUtils.copyProperties(productRecordDto, productModel);
-		
+
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		UserModel userModel = (UserModel) this.userRepository.findByLogin(authentication.getName());
-		productModel.setUpdatedby(userModel.getVsgi_user_id());
+		UserModel authenticatedUser = (UserModel) this.userRepository.findByLogin(authentication.getName());
+		productModel.setUpdatedby(authenticatedUser.getVsgi_user_id());
 
 		return ResponseEntity.status(HttpStatus.OK).body(productRepository.save(productModel));
 	}
@@ -121,5 +122,4 @@ public class ProductController {
 		productRepository.delete(productOptional.get());
 		return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfuly");
 	}
-
 }
