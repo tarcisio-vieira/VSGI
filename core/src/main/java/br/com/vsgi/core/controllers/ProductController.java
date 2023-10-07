@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,15 +23,21 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import static br.com.vsgi.core.constant.Constant.*;
 import br.com.vsgi.core.domain.product.ProductDto;
 import br.com.vsgi.core.domain.product.ProductModel;
 import br.com.vsgi.core.domain.user.UserModel;
-import br.com.vsgi.core.repositories.ProductRepository;
 import br.com.vsgi.core.repositories.AuthenticationRepository;
+import br.com.vsgi.core.repositories.ProductRepository;
 import jakarta.validation.Valid; 
 
 @RestController
 public class ProductController {
+	
+	/**
+	 * Logger LOGGER
+	 */
+	private static final Logger LOGGER = LogManager.getLogger(ProductController.class);
 
 	@Autowired
 	ProductRepository productRepository;
@@ -43,6 +51,7 @@ public class ProductController {
 	 */
 	@PostMapping("/products")
 	public ResponseEntity<ProductModel> saveProduct(@RequestBody @Valid ProductDto productRecordDto) {
+		LOGGER.info(SAVE_STARTING);
 		var productModel = new ProductModel();
 		BeanUtils.copyProperties(productRecordDto, productModel);
 		
@@ -71,6 +80,7 @@ public class ProductController {
 				product.add(linkTo(methodOn(ProductController.class).getOneProduct(id)).withSelfRel());
 			}
 		}
+
 		return ResponseEntity.status(HttpStatus.OK).body(productRepository.findAll());
 	}
 	
