@@ -1,5 +1,6 @@
 package br.com.vsgi.core.controllers;
 
+import static br.com.vsgi.core.constant.Constant.SAVE_STARTING;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -7,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,6 +33,11 @@ import jakarta.validation.Valid;
 
 @RestController
 public class OrgController {
+	
+	/**
+	 * Logger LOGGER
+	 */
+	private static final Logger LOGGER = LogManager.getLogger(OrgController.class);
 
 	@Autowired
 	OrgRepository orgRepository;
@@ -43,6 +51,7 @@ public class OrgController {
 	 */
 	@PostMapping("/orgs")
 	public ResponseEntity<OrgModel> saveOrg(@RequestBody @Valid OrgDto orgRecordDto) {
+		LOGGER.info(SAVE_STARTING);
 		var orgModel = new OrgModel();
 		BeanUtils.copyProperties(orgRecordDto, orgModel);
 		
