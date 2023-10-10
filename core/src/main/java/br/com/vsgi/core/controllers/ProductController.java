@@ -1,5 +1,15 @@
+/*
+ * COPYRIGHT VSGI 2023 - ALL RIGHTS RESERVED.
+ *
+ * This software is only to be used for the purpose for which it has been
+ * provided. No part of it is to be reproduced, disassembled, transmitted,
+ * stored in a retrieval system nor translated in any human or computer
+ * language in any way or for any other purposes whatsoever without the prior
+ * written consent of VSGI.
+ */
 package br.com.vsgi.core.controllers;
 
+import static br.com.vsgi.core.type.CoreConstantType.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -23,17 +33,21 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import static br.com.vsgi.core.constant.Constant.*;
 import br.com.vsgi.core.domain.product.ProductDto;
 import br.com.vsgi.core.domain.product.ProductModel;
 import br.com.vsgi.core.domain.user.UserModel;
 import br.com.vsgi.core.repositories.AuthenticationRepository;
 import br.com.vsgi.core.repositories.ProductRepository;
-import jakarta.validation.Valid; 
+import br.com.vsgi.core.type.CoreErrorException;
+import jakarta.validation.Valid;
 
+/**
+ * @author Tarcisio Vieira
+ *
+ */
 @RestController
 public class ProductController {
-	
+
 	/**
 	 * Logger LOGGER
 	 */
@@ -41,95 +55,146 @@ public class ProductController {
 
 	@Autowired
 	ProductRepository productRepository;
-	
+
 	@Autowired
-	private AuthenticationRepository userRepository;
+	private AuthenticationRepository authenticationRepository;
 	
 	/**
+	 * Create a new instance of ProductController
+	 * 
 	 * @param productRecordDto
-	 * @return
+	 * @return ResponseEntity<ProductModel> 
 	 */
 	@PostMapping("/products")
 	public ResponseEntity<ProductModel> saveProduct(@RequestBody @Valid ProductDto productRecordDto) {
-		LOGGER.info(SAVE_STARTING);
-		var productModel = new ProductModel();
-		BeanUtils.copyProperties(productRecordDto, productModel);
-		
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		UserModel authenticatedUser = (UserModel) this.userRepository.findByLogin(authentication.getName());
-		productModel.setVsgi_product_uuid(UUID.randomUUID());
-		productModel.setCreatedby(authenticatedUser.getVsgi_user_id());
-		productModel.setUpdatedby(authenticatedUser.getVsgi_user_id());
-		productModel.setVsgi_client_id(authenticatedUser.getVsgi_client_id());
-		productModel.setVsgi_org_id(authenticatedUser.getVsgi_org_id());
-		if (productModel.getDescription() == null || productModel.getDescription().trim().equals("")) {
-			productModel.setDescription(productModel.getName());
+		LOGGER.info(authenticated().getName() + SAVE_STARTING);
+		try {
+			var productModel = new ProductModel();
+			BeanUtils.copyProperties(productRecordDto, productModel);
+
+			productModel.setVsgi_product_uuid(UUID.randomUUID());
+			productModel.setCreatedby(authenticated().getVsgi_user_id());
+			productModel.setUpdatedby(authenticated().getVsgi_user_id());
+			productModel.setVsgi_client_id(authenticated().getVsgi_client_id());
+			productModel.setVsgi_org_id(authenticated().getVsgi_org_id());
+			if (productModel.getDescription() == null || productModel.getDescription().trim().equals("")) {
+				productModel.setDescription(productModel.getName());
+			}
+			productRepository.save(productModel);
+			LOGGER.info(authenticated().getName() + SAVED_SUCCESSFULLY + productModel.getVsgi_product_id());
+			return ResponseEntity.status(HttpStatus.CREATED).body(productModel);
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage());
+			throw new CoreErrorException(ERROR_EXCEPTION, HttpStatus.NOT_FOUND);
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(productRepository.save(productModel));
 	}
 
 	/**
-	 * @return
+	 * Use this method to get list object
+	 * 
+	 * @return ResponseEntity<List<ProductModel>>
 	 */
 	@GetMapping("/products")
-	public ResponseEntity<List<ProductModel>> getAllProducts(){
-		List<ProductModel> productsList = productRepository.findAll();
-		if(!productsList.isEmpty()) {
-			for(ProductModel product : productsList) {
-				 Long id = product.getVsgi_product_id();
-				product.add(linkTo(methodOn(ProductController.class).getOneProduct(id)).withSelfRel());
+	public ResponseEntity<List<ProductModel>> getAllProducts() {
+		LOGGER.info(authenticated().getName() + GET_ALL);
+		try {
+			List<ProductModel> productsList = productRepository.findAll();
+			if (!productsList.isEmpty()) {
+				for (ProductModel product : productsList) {
+					Long id = product.getVsgi_product_id();
+					product.add(linkTo(methodOn(ProductController.class).getOneProduct(id)).withSelfRel());
+				}
 			}
+			return ResponseEntity.status(HttpStatus.OK).body(productRepository.findAll());
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage());
+			throw new CoreErrorException(ERROR_EXCEPTION, HttpStatus.NOT_FOUND);
 		}
-
-		return ResponseEntity.status(HttpStatus.OK).body(productRepository.findAll());
 	}
-	
+
 	/**
+	 * Use this method to get object by id
+	 * 
 	 * @param id
-	 * @return
+	 * @return ResponseEntity<Object>
 	 */
 	@GetMapping("/products/{id}")
-	public ResponseEntity<Object> getOneProduct(@PathVariable(value="id") Long id) {
-		Optional<ProductModel> productOptional = productRepository.findById(id);
-		if(productOptional.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
-		}		
-		productOptional.get().add(linkTo(methodOn(ProductController.class).getAllProducts()).withSelfRel());		
-		return ResponseEntity.status(HttpStatus.OK).body(productOptional.get());
+	public ResponseEntity<Object> getOneProduct(@PathVariable(value = "id") Long id) {
+		LOGGER.info(authenticated().getName() + GET_ONE + id);
+		try {
+			Optional<ProductModel> productOptional = productRepository.findById(id);
+			if (productOptional.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+						.body(authenticated().getLogin() + RECORD_NOT_FOUND + id);
+			}
+			productOptional.get().add(linkTo(methodOn(ProductController.class).getAllProducts()).withSelfRel());
+			return ResponseEntity.status(HttpStatus.OK).body(productOptional.get());
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage());
+			throw new CoreErrorException(ERROR_EXCEPTION, HttpStatus.NOT_FOUND);
+		}
 	}
-	
+
 	/**
+	 * Class responsible for receiving and updating save data
+	 * 
 	 * @param id
-	 * @return
+	 * @return ResponseEntity<Object>
 	 */
 	@PutMapping("/products/{id}")
 	public ResponseEntity<Object> updateProduct(@PathVariable(value = "id") Long id,
 			@RequestBody @Valid ProductDto productRecordDto) {
-		Optional<ProductModel> productOptional = productRepository.findById(id);
-		if (productOptional.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
-		}		
-		var productModel = productOptional.get();
-		BeanUtils.copyProperties(productRecordDto, productModel);
+		LOGGER.info(authenticated().getName() + UPDATE_STARTING + id);
+		try {
+			Optional<ProductModel> productOptional = productRepository.findById(id);
+			if (productOptional.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+						.body(authenticated().getLogin() + RECORD_NOT_FOUND + id);
+			}
+			var productModel = productOptional.get();
+			BeanUtils.copyProperties(productRecordDto, productModel);
+			productModel.setUpdatedby(authenticated().getVsgi_user_id());
+			productRepository.save(productModel);
 
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		UserModel authenticatedUser = (UserModel) this.userRepository.findByLogin(authentication.getName());
-		productModel.setUpdatedby(authenticatedUser.getVsgi_user_id());
-
-		return ResponseEntity.status(HttpStatus.OK).body(productRepository.save(productModel));
+			LOGGER.info(authenticated().getName() + UPDATE_SUCCESSFULLY + id);
+			return ResponseEntity.status(HttpStatus.OK).body(productModel);
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage());
+			throw new CoreErrorException(ERROR_EXCEPTION, HttpStatus.NOT_FOUND);
+		}
 	}
-	
+
 	/**
+	 * Class responsible for deleting data
+	 * 
 	 * @param id
-	 * @return
+	 * @return ResponseEntity<Object>
 	 */
 	@DeleteMapping("/products/{id}")
 	public ResponseEntity<Object> deleteProduct(@PathVariable(value = "id") Long id) {
-		Optional<ProductModel> productOptional = productRepository.findById(id);
-		if (productOptional.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
-		}		
-		productRepository.delete(productOptional.get());
-		return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfuly");
+		LOGGER.info(authenticated().getName() + DELETE_STARTING + id);
+		try {
+			Optional<ProductModel> productOptional = productRepository.findById(id);
+			if (productOptional.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+						.body(authenticated().getLogin() + RECORD_NOT_FOUND + id);
+			}
+			productRepository.delete(productOptional.get());
+			return ResponseEntity.status(HttpStatus.OK).body(authenticated().getLogin() + DELETE_SUCCESSFULLY + id);
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage());
+			throw new CoreErrorException(ERROR_EXCEPTION, HttpStatus.NOT_FOUND);
+		}
+	}
+
+	/**
+	 * Use this class to get authenticated user data
+	 * 
+	 * @return UserModel
+	 */
+	private UserModel authenticated() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		UserModel userAuthenticated = (UserModel) this.authenticationRepository.findByLogin(authentication.getName());
+		return userAuthenticated;
 	}
 }
