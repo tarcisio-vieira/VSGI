@@ -1,6 +1,6 @@
 package br.com.vsgi.core.controllers;
 
-import static br.com.vsgi.core.constant.Constant.SAVE_STARTING;
+import static br.com.vsgi.core.type.CoreConstantType.SAVE_STARTING;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -131,5 +131,4 @@ public class ClientController {
 		clientRepository.delete(clientOptional.get());
 		return ResponseEntity.status(HttpStatus.OK).body("Client deleted successfuly");
 	}
-
 }
