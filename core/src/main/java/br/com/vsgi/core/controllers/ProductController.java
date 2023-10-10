@@ -48,7 +48,7 @@ public class ProductController {
 	ProductRepository productRepository;
 
 	@Autowired
-	private AuthenticationRepository userRepository;
+	private AuthenticationRepository authenticationRepository;
 
 	/**
 	 * @param productRecordDto
@@ -174,7 +174,7 @@ public class ProductController {
 	 */
 	private UserModel authenticated() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		UserModel userAuthenticated = (UserModel) this.userRepository.findByLogin(authentication.getName());
+		UserModel userAuthenticated = (UserModel) this.authenticationRepository.findByLogin(authentication.getName());
 		return userAuthenticated;
 	}
 }
