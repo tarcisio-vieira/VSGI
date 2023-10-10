@@ -1,3 +1,12 @@
+/*
+ * COPYRIGHT VSGI 2023 - ALL RIGHTS RESERVED.
+ *
+ * This software is only to be used for the purpose for which it has been
+ * provided. No part of it is to be reproduced, disassembled, transmitted,
+ * stored in a retrieval system nor translated in any human or computer
+ * language in any way or for any other purposes whatsoever without the prior
+ * written consent of VSGI.
+ */
 package br.com.vsgi.core.controllers;
 
 import static br.com.vsgi.core.type.CoreConstantType.*;
@@ -49,10 +58,12 @@ public class ProductController {
 
 	@Autowired
 	private AuthenticationRepository authenticationRepository;
-
+	
 	/**
+	 * Create a new instance of ProductController
+	 * 
 	 * @param productRecordDto
-	 * @return
+	 * @return ResponseEntity<ProductModel> 
 	 */
 	@PostMapping("/products")
 	public ResponseEntity<ProductModel> saveProduct(@RequestBody @Valid ProductDto productRecordDto) {
@@ -79,7 +90,9 @@ public class ProductController {
 	}
 
 	/**
-	 * @return
+	 * Use this method to get list object
+	 * 
+	 * @return ResponseEntity<List<ProductModel>>
 	 */
 	@GetMapping("/products")
 	public ResponseEntity<List<ProductModel>> getAllProducts() {
@@ -100,8 +113,10 @@ public class ProductController {
 	}
 
 	/**
+	 * Use this method to get object by id
+	 * 
 	 * @param id
-	 * @return
+	 * @return ResponseEntity<Object>
 	 */
 	@GetMapping("/products/{id}")
 	public ResponseEntity<Object> getOneProduct(@PathVariable(value = "id") Long id) {
@@ -121,8 +136,10 @@ public class ProductController {
 	}
 
 	/**
+	 * Class responsible for receiving and updating save data
+	 * 
 	 * @param id
-	 * @return
+	 * @return ResponseEntity<Object>
 	 */
 	@PutMapping("/products/{id}")
 	public ResponseEntity<Object> updateProduct(@PathVariable(value = "id") Long id,
@@ -137,7 +154,6 @@ public class ProductController {
 			var productModel = productOptional.get();
 			BeanUtils.copyProperties(productRecordDto, productModel);
 			productModel.setUpdatedby(authenticated().getVsgi_user_id());
-
 			productRepository.save(productModel);
 
 			LOGGER.info(authenticated().getName() + UPDATE_SUCCESSFULLY + id);
@@ -149,8 +165,10 @@ public class ProductController {
 	}
 
 	/**
+	 * Class responsible for deleting data
+	 * 
 	 * @param id
-	 * @return
+	 * @return ResponseEntity<Object>
 	 */
 	@DeleteMapping("/products/{id}")
 	public ResponseEntity<Object> deleteProduct(@PathVariable(value = "id") Long id) {
@@ -170,6 +188,8 @@ public class ProductController {
 	}
 
 	/**
+	 * Use this class to get authenticated user data
+	 * 
 	 * @return UserModel
 	 */
 	private UserModel authenticated() {
